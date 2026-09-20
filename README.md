@@ -1,5 +1,7 @@
 # SubTrack
 
+![CI](https://github.com/SrihariniRajasekar/subtrack/actions/workflows/ci.yml/badge.svg)
+
 A subscription billing microservice built with Spring Boot — manages customers, plans, subscriptions, and billing cycles, with real day-based proration logic when a customer changes plans mid-cycle.
 
 Built as a learning/portfolio project to demonstrate backend fundamentals: layered architecture, REST API design, JPA/relational modeling, business logic that goes beyond CRUD, and testing.
@@ -70,7 +72,7 @@ docker compose up --build
 
 This builds the app and runs it against a real PostgreSQL container instead of H2, with data that persists across restarts.
 
-> **Note on this project's Docker setup:** the `Dockerfile` and `docker-compose.yml` are complete and correct (multi-stage build, health-checked startup ordering, persistent volume) but have not been run locally in this repo's development — the dev machine used had under 6GB of free disk space, not enough to safely install Docker Desktop's WSL2 backend alongside everything else. This is a genuine, common constraint rather than an oversight, and it's called out here rather than hidden. The compose file follows standard, well-established patterns and should run correctly on a machine with adequate disk space.
+> **Note on this project's Docker setup:** the `Dockerfile` and `docker-compose.yml` were developed on a machine without enough free disk space to install Docker Desktop locally (under 6GB free). Rather than skip verification entirely, this repo uses **GitHub Actions CI** (see `.github/workflows/ci.yml` and the Actions tab) to actually build the image and run `docker compose up` on every push, confirming the full containerized stack starts and responds correctly — verified automatically, without requiring Docker on the local dev machine.
 
 ### Running tests
 
@@ -96,6 +98,15 @@ mvn test
 | GET | `/subscriptions/{id}/invoices` | List a subscription's invoices |
 
 Full interactive documentation: `/swagger-ui.html`
+
+## Continuous Integration
+
+Every push to `main` triggers a GitHub Actions workflow (`.github/workflows/ci.yml`) that:
+1. Runs the full test suite (all 16 tests)
+2. Builds the application jar
+3. Builds the Docker image and runs `docker compose up`, then confirms the containerized app actually responds to requests
+
+This is what makes the Docker setup a verified fact rather than an untested claim, despite local development happening on a disk-constrained machine.
 
 ## Notable bugs hit and fixed during development
 
