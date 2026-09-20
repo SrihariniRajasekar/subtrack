@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: subtrack-db
+    environment:
+      POSTGRES_DB: subtrackdb
+      POSTGRES_USER: subtrack
+      POSTGRES_PASSWORD: subtrack
+    ports:
+      - "5432:5432"
+    volumes:
+      # Named volume so data survives container restarts (not tied to the
+      # container's filesystem, which is wiped when the container is removed).
+      - subtrack-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U subtrack -d subtrackdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: subtrack-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      db:
+        # Waits for Postgres to actually be ready to accept connections,
+        # not just for the container to start - avoids a race condition
+        # where the app boots before the database is accepting connections.
+        condition: service_healthy
+
+volumes:
+  subtrack-db-data:
